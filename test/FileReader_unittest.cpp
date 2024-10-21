@@ -1,11 +1,8 @@
 #include "FileReader.h"
 #include <gtest/gtest.h>
-#include <iostream>
 
 TEST(FileReader, open)
 {
-    std::cout << ::testing::UnitTest::GetInstance()->original_working_dir() << " " << std::filesystem::current_path()
-              << std::endl;
     FileReader fileReader{"file.txt"};
     ASSERT_TRUE(fileReader.open());
 }

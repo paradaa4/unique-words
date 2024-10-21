@@ -1,30 +1,22 @@
 include(FetchContent)
-FetchContent_Declare(gtest
-  QUIET
-  URL https://github.com/google/googletest/archive/release-1.10.0.tar.gz
+FetchContent_Declare(
+  gtest
+  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(gtest)
 
-add_executable(
-    unit_tests
-    FileReader_unittest.cpp
-)
+function(add_unit_test name)
+  add_executable(${name}-test ${name}_unittest.cpp)
+  target_link_libraries(${name}-test
+    PUBLIC
+      core
+      gtest_main
+  )
+  add_test(NAME ${name}-test COMMAND ${name}-test WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test/)
 
-target_link_libraries(unit_tests
-  PUBLIC
-    core
-    gtest_main
-)
+endfunction()
 
-include(GoogleTest)
-gtest_discover_tests(unit_tests
-  PROPERTIES
-    LABELS "unit"
-  DISCOVERY_TIMEOUT 
-    240
-)
-
-add_test(NAME unit_tests COMMAND unit_tests)
+add_unit_test(FileReader)
+add_unit_test(StringSplitter)
