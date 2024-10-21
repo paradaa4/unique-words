@@ -12,7 +12,7 @@
 class ThreadPool
 {
 public:
-    explicit ThreadPool(const auto &numberOfThreads = std::thread::hardware_concurrency())
+    explicit ThreadPool(unsigned numberOfThreads = std::thread::hardware_concurrency())
         : mTasks(numberOfThreads)
     {
         for (auto id{0}; id < numberOfThreads; ++id) {
@@ -55,6 +55,7 @@ public:
         }
     }
 
+    [[nodiscard]] size_t size() const { return mThreads.size(); }
     [[nodiscard]] std::atomic_int &unassignedTasks() { return mUnassignedTasks; }
 
     void waitUntilDone()
