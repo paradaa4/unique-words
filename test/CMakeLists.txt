@@ -27,4 +27,4 @@ gtest_discover_tests(unit_tests
     240
 )
 
-add_test(NAME unit_tests COMMAND unit_tests WORKING_DIRECTORY "/Users/kamil")
+add_test(NAME unit_tests COMMAND unit_tests)
