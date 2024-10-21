@@ -33,25 +33,11 @@ int main(int argc, char *argv[])
 
     std::vector<std::future<std::unordered_set<std::string>>> futures;
     futures.reserve(threads);
-
-    auto split = [](auto &&text) {
-        auto start = text.begin();
-        auto next = std::find(start, text.end(), ' ');
-        std::unordered_set<std::string> set;
-        while (next != text.end()) {
-            set.insert(std::string{start, next});
-            start = next + 1;
-            next = std::find(start, text.end(), ' ');
-        }
-        set.insert(std::string{start, next});
-        return set;
-    };
-
     while (fileReader.hasNextChunk()) {
         while (pool.unassignedTasks().load(std::memory_order_acquire) == maxQueueSize) {
         }
         futures.push_back(pool.enqueue(
-            [split](auto &&text) { return StringSplitter::split(std::string_view{*text}); },
+            [](auto &&text) { return StringSplitter::split(std::string_view{*text}); },
             std::make_shared<std::string>(std::move(fileReader.nextChunk()))));
     }
 
