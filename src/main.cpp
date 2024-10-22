@@ -1,15 +1,14 @@
 #include "FileReader.h"
 #include "StringSplitter.h"
 #include "ThreadPool.h"
-#include <chrono>
 #include <format>
 #include <iostream>
 #include <ranges>
 
+constexpr size_t MAX_CHUNK_SIZE = 1024 * 1024 * 128;
+
 int main(int argc, char *argv[])
 {
-    const auto start = std::chrono::high_resolution_clock::now();
-
     const auto args = std::vector<std::string_view>(argv + 1, argv + argc);
     if (args.size() != 1) {
         std::cerr << std::format("Filename is missing\n");
@@ -24,8 +23,9 @@ int main(int argc, char *argv[])
     ThreadPool pool;
     const auto threads = pool.size();
     const auto maxQueueSize = int(threads * 1.5);
+    const auto chunkSize = std::min(std::filesystem::file_size(fileName) / maxQueueSize, MAX_CHUNK_SIZE);
 
-    FileReader fileReader{fileName, std::filesystem::file_size(fileName) / maxQueueSize};
+    FileReader fileReader{fileName, chunkSize};
     if (!fileReader.open()) {
         std::cerr << std::format("Cannot open file\n");
         return EXIT_FAILURE;
@@ -45,10 +45,7 @@ int main(int argc, char *argv[])
     for (auto data : futures | std::views::transform([](auto &f) { return f.get(); })) {
         uniqueWords.insert(data.begin(), data.end());
     }
-    const auto end = std::chrono::high_resolution_clock::now();
     std::cout << std::format("{}\n", uniqueWords.size());
-    std::cout << std::format(
-        "Time taken by function: {} milliseconds\n", duration_cast<std::chrono::milliseconds>(end - start));
 
     return EXIT_SUCCESS;
 }
