@@ -2,17 +2,14 @@
 unique_words
 </h1>
 
-A program that counts the number of distinct unique words in a file whose name is passed as an argument to a program. Program uses simple thread pool in order to utilize available CPU resources.
+A program that counts the number of distinct unique words in a file whose name is passed as an argument to a program. 
+Program uses a simple thread pool in order to utilize all available CPU resources.
 
-## To build
+## To build and run
 
 ```powershell
 cmake -S . -B build
-cmake --build build
-```
-
-## To run
-
-```powershell
-./unique_words file_name
+cd build
+cmake --build . --config Release
+./unique_words file
 ```
