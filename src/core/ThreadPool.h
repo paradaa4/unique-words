@@ -17,7 +17,7 @@ public:
     {
         for (auto id{0}; id < numberOfThreads; ++id) {
             mQueue.push_back(id);
-            mThreads.emplace_back([=] {
+            mThreads.emplace_back([this, id](const auto &stopToken) {
                 do {
                     mTasks[id].signal.acquire();
 
@@ -37,7 +37,7 @@ public:
                         mCompletedSignal.notify_one();
                     }
 
-                } while (mActive);
+                } while (!stopToken.stop_requested());
             });
         }
     }
@@ -45,11 +45,10 @@ public:
     ThreadPool &operator=(const ThreadPool &) = delete;
     ~ThreadPool()
     {
-        mActive = false;
         waitUntilDone();
 
         for (auto i{0}; i < mThreads.size(); ++i) {
-            // threads_[i].request_stop();
+            mThreads[i].request_stop();
             mTasks[i].signal.release();
             mThreads[i].join();
         }
@@ -103,11 +102,10 @@ private:
         std::binary_semaphore signal{0};
     };
 
-    std::vector<std::thread> mThreads;
+    std::vector<std::jthread> mThreads;
     std::deque<Task> mTasks;
     std::deque<std::size_t> mQueue;
     std::atomic_int mUnassignedTasks{0};
     std::atomic_int mOngoingTasks{0};
     std::atomic_bool mCompletedSignal{false};
-    std::atomic_bool mActive{true};
 };
